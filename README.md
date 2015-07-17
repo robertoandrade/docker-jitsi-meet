@@ -44,7 +44,6 @@ About jitsi-meet: [www.jitsi.org][1]
 
 To help improve this container [docker-jitsi-meet][5]
 
-Example of this [docker-jitsi-meet][6]
 
 [1]:https://jitsi.org/
 [2]:https://www.docker.com
