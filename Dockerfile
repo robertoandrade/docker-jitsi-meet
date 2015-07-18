@@ -24,16 +24,19 @@ ENV NGINX_CONF=/etc/nginx/sites-enabled/*.conf
 RUN touch $LOG && \
 	chown jvb:jitsi $LOG && \
 	chmod +xr -R /var/log/jitsi && \
+	mkdir /etc/ssl/nginx && \
+	cp /var/lib/prosody/localhost.* /etc/ssl/nginx && \
 	cat $NGINX_CONF \
 		| tr '\n' '\r' \
+		| sed -e 's/server_name localhost;/server_name ~.*$;/' \
+		| sed -e 's/\/var\/lib\/prosody/\/etc\/ssl\/nginx/g' \
 		| sed -e 's/proxy_set_header Host $http_host;/proxy_set_header Host localhost;/' \
 		| tr '\r' '\n' \
 		> /tmp/nginx.conf && \
 	cp /tmp/nginx.conf $NGINX_CONF && \
 	sed "s/\/\/localhost\//\/\/'\+document.location.host\+'\//g" -i /etc/jitsi/meet/*.js
 
-EXPOSE 80 443 5347
-EXPOSE 10000/udp 10001/udp 10002/udp 10003/udp 10004/udp 10005/udp 10006/udp 10007/udp 10008/udp 10009/udp 10010/udp
+EXPOSE 80 443
 
 RUN mkdir -p /app/src
 COPY run.sh jitsi-meet.sh /app/src/
