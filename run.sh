@@ -1,3 +1,2 @@
-echo Port $PORT
-./jitsi-meet.sh && \
+/app/src/jitsi-meet.sh && \
 tail -f $LOG
