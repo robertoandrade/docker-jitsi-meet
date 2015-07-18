@@ -55,3 +55,5 @@ WORKDIR /app/src
 COPY run.sh jitsi-meet.sh /app/src/
 
 USER root
+
+CMD /app/src/run.sh
