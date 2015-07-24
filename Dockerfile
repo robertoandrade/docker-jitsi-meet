@@ -47,6 +47,7 @@ RUN touch $LOG && \
 EXPOSE 80 443
 
 RUN mkdir -p /app/src
+COPY sip-communicator.properties /usr/share/jitsi-videobridge/.sip-communicator/
 COPY run.sh jitsi-meet.sh /app/src/
 
 CMD /app/src/run.sh
