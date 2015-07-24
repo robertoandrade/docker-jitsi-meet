@@ -23,6 +23,7 @@ RUN echo 'deb http://download.jitsi.org/nightly/deb unstable/' >> /etc/apt/sourc
 
 ENV NGINX_CONF=/etc/nginx/sites-enabled/*.conf
 ENV AUTHBIND_CONF=/etc/authbind/byport/443
+ENV SIP_CONF_DIR=/usr/share/jitsi-videobridge/.sip-communicator
 
 RUN touch $LOG && \
 	chown jvb:jitsi $LOG && \
@@ -46,8 +47,11 @@ RUN touch $LOG && \
 
 EXPOSE 80 443
 
-RUN mkdir -p /app/src
-COPY sip-communicator.properties /usr/share/jitsi-videobridge/.sip-communicator/
+RUN mkdir -p /app/src && \
+	mkdir -p $SIP_CONF_DIR/log && \
+	chown -R jvb:jitsi $SIP_CONF_DIR/
+
+COPY sip-communicator.properties $SIP_CONF_DIR/
 COPY run.sh jitsi-meet.sh /app/src/
 
 CMD /app/src/run.sh
