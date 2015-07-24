@@ -6,9 +6,11 @@ ENV TERM xterm
 ENV LOG=/var/log/jitsi/jvb.log
 
 # Prerequisites
-RUN apt-get update && \
-	apt-get install -y wget dnsutils vim telnet prosody && \
-	rm /etc/prosody/conf.*/localhost.cfg.lua
+RUN echo 'deb http://http.debian.net/debian jessie-backports main' >> /etc/apt/sources.list && \
+	apt-get update && \
+	apt-get install -y wget dnsutils vim telnet prosody openjdk-8-jdk && \
+	rm /etc/prosody/conf.*/localhost.cfg.lua && \
+	update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
 # Jitsi Meet and dependencies
 RUN echo 'deb http://download.jitsi.org/nightly/deb unstable/' >> /etc/apt/sources.list && \
@@ -20,6 +22,7 @@ RUN echo 'deb http://download.jitsi.org/nightly/deb unstable/' >> /etc/apt/sourc
 # Customizing installation
 
 ENV NGINX_CONF=/etc/nginx/sites-enabled/*.conf
+ENV AUTHBIND_CONF=/etc/authbind/byport/443
 
 RUN touch $LOG && \
 	chown jvb:jitsi $LOG && \
@@ -29,12 +32,17 @@ RUN touch $LOG && \
 	cat $NGINX_CONF \
 		| tr '\n' '\r' \
 		| sed -e 's/server_name localhost;/server_name ~.*$;/' \
+		| sed -e 's/listen 443 ssl;/listen 4443 ssl;/' \
 		| sed -e 's/\/var\/lib\/prosody/\/etc\/ssl\/nginx/g' \
 		| sed -e 's/proxy_set_header Host $http_host;/proxy_set_header Host localhost;/' \
 		| tr '\r' '\n' \
 		> /tmp/nginx.conf && \
 	cp /tmp/nginx.conf $NGINX_CONF && \
-	sed "s/\/\/localhost\//\/\/'\+document.location.host\+'\//g" -i /etc/jitsi/meet/*.js
+	sed "s/\/\/localhost\//\/\/'\+document.location.host\+'\//g" -i /etc/jitsi/meet/*.js && \
+	sed 's/JVB_OPTS=""/JVB_OPTS="--apis=rest,xmpp"\nAUTHBIND=yes/' -i /etc/jitsi/videobridge/config && \
+	touch $AUTHBIND_CONF && \
+	chown jvb:jitsi $AUTHBIND_CONF && \
+	chmod u+x $AUTHBIND_CONF
 
 EXPOSE 80 443
 
