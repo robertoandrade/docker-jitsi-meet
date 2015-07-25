@@ -20,7 +20,6 @@ RUN echo 'deb http://download.jitsi.org/nightly/deb unstable/' >> /etc/apt/sourc
 	apt-get clean
 
 # Customizing installation
-
 ENV NGINX_CONF=/etc/nginx/sites-enabled/*.conf
 ENV AUTHBIND_CONF=/etc/authbind/byport/443
 ENV SIP_CONF_DIR=/usr/share/jitsi-videobridge/.sip-communicator
@@ -53,5 +52,13 @@ RUN mkdir -p /app/src && \
 
 COPY sip-communicator.properties $SIP_CONF_DIR/
 COPY run.sh jitsi-meet.sh /app/src/
+
+# Bugfix for ICE4J
+RUN apt-get -y install git maven && \
+	git clone https://github.com/jitsi/jitsi-universe && \
+	git clone http://github.com/robertoandrade/ice4j.git -b bugfix/tcp-harvester-interface-reuse && \
+	cd ice4j && \
+	mvn package -DskipTests && \
+	cp target/ice4j-*.jar /usr/share/jitsi-videobridge/lib/ice4j.jar
 
 CMD /app/src/run.sh
