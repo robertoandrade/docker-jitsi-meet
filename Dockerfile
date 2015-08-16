@@ -25,6 +25,14 @@ RUN echo 'deb http://http.debian.net/debian jessie-backports main' >> /etc/apt/s
 	apt-get install -y openjdk-8-jdk && \
 	update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
+# Bugfix for ICE4J
+RUN apt-get -y install git maven && \
+	git clone https://github.com/jitsi/jitsi-universe && \
+	git clone http://github.com/robertoandrade/ice4j.git -b bugfix/tcp-harvester-interface-reuse && \
+	cd ice4j && \
+	mvn package -DskipTests && \
+	cp target/ice4j-*.jar /usr/share/jitsi-videobridge/lib/ice4j.jar
+
 # Customizing installation
 RUN touch $LOG && \
 	chown jvb:jitsi $LOG && \
@@ -40,7 +48,7 @@ RUN touch $LOG && \
 		| tr '\r' '\n' \
 		> /tmp/nginx.conf && \
 	cp /tmp/nginx.conf $NGINX_CONF && \
-	sed "s/\/\/localhost\//\/\/'\+document.location.host\+'\//g" -i /etc/jitsi/meet/*.js && \
+	sed "s/\/\/localhost\//\/\/'\+document.location.host\+'\//g; s/channelLastN: -1,/channelLastN: 3,/g" -i /etc/jitsi/meet/*.js && \
 	sed 's/JVB_OPTS=""/JVB_OPTS="--apis=rest,xmpp"\nAUTHBIND=yes/' -i /etc/jitsi/videobridge/config && \
 	touch $AUTHBIND_CONF && \
 	chown jvb:jitsi $AUTHBIND_CONF && \
@@ -54,13 +62,5 @@ RUN mkdir -p /app/src && \
 
 COPY $SIP_CONF_FILE $SIP_CONF_DIR/
 COPY run.sh jitsi-meet.sh /app/src/
-
-# Bugfix for ICE4J
-RUN apt-get -y install git maven && \
-	git clone https://github.com/jitsi/jitsi-universe && \
-	git clone http://github.com/robertoandrade/ice4j.git -b bugfix/tcp-harvester-interface-reuse && \
-	cd ice4j && \
-	mvn package -DskipTests && \
-	cp target/ice4j-*.jar /usr/share/jitsi-videobridge/lib/ice4j.jar
 
 CMD /app/src/run.sh
