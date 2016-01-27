@@ -62,5 +62,6 @@ RUN mkdir -p /app/src && \
 
 COPY $SIP_CONF_FILE $SIP_CONF_DIR/
 COPY run.sh jitsi-meet.sh /app/src/
+COPY src/ /usr/share/jitsi-meet
 
 CMD /app/src/run.sh
