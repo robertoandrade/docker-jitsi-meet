@@ -1,1 +1,1 @@
-docker build -t robertoandrade/jitsi-meet .
+docker build -t robertoandrade/jitsi-meet src
