@@ -35,7 +35,7 @@ or (subsequent times):
 
 After that open up the following address :
 
-  - **http://$DOCKER_HOST/**
+  - **https://$DOCKER_HOST/**
 
 
 ## More Info
